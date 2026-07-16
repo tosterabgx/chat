@@ -1,13 +1,26 @@
+import { useEffect } from "react";
 import { useRef, useState } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3000/");
 
 export default function App() {
   const [messages, setMessages] = useState([]);
   const inputRef = useRef(null);
 
+  useEffect(() => {
+    socket.on("message", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => socket.off("message");
+  }, []);
+
   function send() {
     const msg = inputRef.current.value;
     if (!msg) return;
     setMessages((prev) => [...prev, msg]);
+    socket.emit("message", msg);
     inputRef.current.value = "";
   }
 
