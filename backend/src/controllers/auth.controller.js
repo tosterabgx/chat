@@ -3,13 +3,9 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
   try {
-    const { login, password } = req.body;
-    if (!login || !password) {
+    const { username, password } = req.body;
+    if (!username || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -19,25 +15,19 @@ export const signup = async (req, res) => {
         .json({ message: "Password must be at least 6 characters" });
     }
 
-    const user = await User.findOne({ login });
+    const user = await User.findOne({ username });
     if (user) {
-      return res.status(400).json({ message: "Login already exists" });
+      return res.status(400).json({ message: "Username already exists" });
     }
 
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ login, password: hashedPassword });
-    if (!newUser) {
-      return res.status(400).json({ message: "Invalid user data" });
-    }
-
+    const newUser = User.create({ username, password: hashedPassword });
     generateToken(newUser._id, res);
-    await newUser.save();
 
     res.status(201).json({
       _id: newUser._id,
-      login: newUser.login,
+      username: newUser.username,
     });
   } catch (error) {
     console.error("Error in signup controller:", error.message);
@@ -46,17 +36,13 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  if (!req.body) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
   try {
-    const { login, password } = req.body;
-    if (!login || !password) {
+    const { username, password } = req.body;
+    if (!username || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.findOne({ login });
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -70,7 +56,7 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       _id: user._id,
-      login: user.login,
+      username: user.username,
     });
   } catch (error) {
     console.error("Error in login controller:", error.message);
@@ -78,7 +64,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
   try {
     res.cookie("jwt", "", { maxAge: 0 });
     res.status(200).json({ message: "Logged out successfully" });

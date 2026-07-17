@@ -9,6 +9,20 @@ export default function App() {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/message");
+        const data = await res.json();
+        setMessages(data["messages"].map((m) => m.text));
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      }
+    };
+
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
     socket.on("message", (msg) => {
       setMessages((prev) => [...prev, msg]);
     });
@@ -19,7 +33,6 @@ export default function App() {
   function send() {
     const msg = inputRef.current.value;
     if (!msg) return;
-    setMessages((prev) => [...prev, msg]);
     socket.emit("message", msg);
     inputRef.current.value = "";
   }
