@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000/");
+const socket = io();
 
 export default function App() {
   const [messages, setMessages] = useState([]);
@@ -11,7 +11,7 @@ export default function App() {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/message");
+        const res = await fetch("/api/message");
         const data = await res.json();
         setMessages(data["messages"].map((m) => m.text));
       } catch (error) {
