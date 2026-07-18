@@ -21,8 +21,8 @@ html {
 *::after,
 html {
   box-sizing: border-box;
-  /* outline: 1px solid red; */
 }
+
 body {
   min-height: 100vh;
   min-height: 100dvh;
@@ -38,10 +38,6 @@ img {
   height: auto;
   max-width: 100%;
   user-select: none;
-}
-
-button {
-  color: inherit;
 }
 
 a,

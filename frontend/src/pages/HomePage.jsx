@@ -1,0 +1,64 @@
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router";
+import { io } from "socket.io-client";
+
+const socket = io();
+
+export default function Home() {
+  const [messages, setMessages] = useState([]);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch("/api/message");
+        const data = await res.json();
+        setMessages(data["messages"].map((m) => m.text));
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      }
+    };
+
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
+    socket.on("message", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => socket.off("message");
+  }, []);
+
+  function send() {
+    const msg = inputRef.current.value;
+    if (!msg) return;
+    socket.emit("message", msg);
+    inputRef.current.value = "";
+  }
+
+  return (
+    <>
+      <h1 className="pt-10 pb-3 text-center text-2xl">Chat</h1>
+      <main className="mx-auto w-125 rounded-md border-2 border-zinc-400">
+        <div className="flex max-h-100 flex-col gap-0.5 overflow-y-auto border-b-2 border-zinc-400 px-2 py-1">
+          {messages.map((m, i) => {
+            return <span key={i}>{m}</span>;
+          })}
+        </div>
+        <input
+          type="text"
+          ref={inputRef}
+          onKeyDown={(e) => e.key === "Enter" && send()}
+          autoFocus
+          className="w-full px-2 py-1 outline-none"
+          placeholder="Type here"
+        />
+      </main>
+      <div className="mt-5 space-x-5 text-center text-sm text-current/40">
+        <Link to="/signup">Signup</Link>
+        <Link to="/login">Login</Link>
+      </div>
+    </>
+  );
+}
