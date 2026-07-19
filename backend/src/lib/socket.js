@@ -2,23 +2,20 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import Message from "../models/message.model.js";
+import { protectedSocket } from "../middleware/socket.middleware.js";
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server);
 
+io.use(protectedSocket);
+
 io.on("connection", (socket) => {
-  console.log("User connected");
-
-  socket.on("message", async (msg) => {
-    const newMessage = new Message({ text: msg });
-    newMessage.save();
+  socket.on("message", async (text) => {
+    const newMessage = new Message({ username: socket.username, text });
+    await newMessage.save();
     io.emit("message", newMessage);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
   });
 });
 

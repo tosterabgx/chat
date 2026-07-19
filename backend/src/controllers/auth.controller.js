@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { generateToken } from "../lib/utils.js";
+import { generateToken, verifyToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
@@ -24,12 +23,12 @@ export const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({ username, password: hashedPassword });
+    await newUser.save();
 
-    newUser.save();
-    generateToken(newUser._id, res);
+    generateToken(newUser._id, newUser.username, res);
 
     res.status(201).json({
-      _id: newUser._id,
+      id: newUser._id,
       username: newUser.username,
     });
   } catch (error) {
@@ -55,10 +54,10 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    generateToken(user._id, res);
+    generateToken(user._id, user.username, res);
 
     res.status(200).json({
-      _id: user._id,
+      id: user._id,
       username: user.username,
     });
   } catch (error) {
@@ -86,18 +85,18 @@ export const checkAuth = async (req, res) => {
         .json({ message: "Unauthorized - No Token Provided" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token);
     if (!decoded) {
       return res.status(401).json({ message: "Unauthorized - Invalid Token" });
     }
 
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({
-      _id: user._id,
+      id: user._id,
       username: user.username,
     });
   } catch (error) {
