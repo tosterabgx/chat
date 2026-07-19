@@ -12,8 +12,9 @@ io.on("connection", (socket) => {
   console.log("User connected");
 
   socket.on("message", async (msg) => {
-    await Message.create({ text: msg });
-    io.emit("message", msg);
+    const newMessage = new Message({ text: msg });
+    newMessage.save();
+    io.emit("message", newMessage);
   });
 
   socket.on("disconnect", () => {
