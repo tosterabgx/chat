@@ -13,9 +13,13 @@ io.use(protectedSocket);
 
 io.on("connection", (socket) => {
   socket.on("message", async (text) => {
-    const newMessage = new Message({ username: socket.username, text });
-    await newMessage.save();
-    io.emit("message", newMessage);
+    try {
+      const newMessage = new Message({ username: socket.username, text });
+      await newMessage.save();
+      io.emit("message", newMessage);
+    } catch (error) {
+      console.error("Error in message socket:", error.message);
+    }
   });
 });
 

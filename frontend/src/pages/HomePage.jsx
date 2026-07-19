@@ -52,9 +52,9 @@ export default function Home() {
       <h1 className="pt-10 pb-3 text-center text-2xl">Chat</h1>
       <main className="mx-auto w-125 rounded-md border-2 border-zinc-400">
         <div className="flex max-h-100 scrollbar-thin flex-col gap-0.5 overflow-y-auto border-b-2 border-zinc-400 px-2 py-1">
-          {messages.map((m, i) => {
+          {messages.map((m) => {
             return (
-              <span key={i}>
+              <span key={m._id}>
                 {m.username}: {m.text}
               </span>
             );
