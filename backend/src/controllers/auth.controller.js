@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { generateToken, verifyToken } from "../lib/utils.js";
+import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
@@ -78,26 +78,9 @@ export const logout = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
   try {
-    const token = req.cookies.jwt;
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - No Token Provided" });
-    }
-
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return res.status(401).json({ message: "Unauthorized - Invalid Token" });
-    }
-
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
     res.status(200).json({
-      id: user._id,
-      username: user.username,
+      id: req.user._id,
+      username: req.user.username,
     });
   } catch (error) {
     console.error("Error in checkAuth controller:", error.message);
