@@ -4,8 +4,8 @@ import express from "express";
 import { connectDB, seed } from "./lib/db.js";
 import { app, server } from "./lib/socket.js";
 import authRoutes from "./routes/auth.route.js";
-import channelRoutes from "./routes/channel.route.js";
-import messageRoutes from "./routes/message.route.js";
+import channelsRoutes from "./routes/channels.route.js";
+import messagesRoutes from "./routes/messages.route.js";
 
 dotenv.config();
 
@@ -15,8 +15,8 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
-app.use("/api/channel", channelRoutes);
-app.use("/api/message", messageRoutes);
+app.use("/api/channels", channelsRoutes);
+app.use("/api/messages", messagesRoutes);
 
 connectDB()
   .then(seed)

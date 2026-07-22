@@ -12,8 +12,13 @@ export const connectDB = async () => {
 };
 
 export const seed = async () => {
-  const exists = await Channel.findOne({ name: "general" });
-  if (!exists) {
+  const general = await Channel.findOne({ name: "general" });
+  if (!general) {
     await Channel.create({ name: "general", description: "Say hi!" });
+  }
+
+  const random = await Channel.findOne({ name: "random" });
+  if (!random) {
+    await Channel.create({ name: "random", description: "random stuff" });
   }
 };

@@ -12,12 +12,12 @@ const io = new Server(server);
 io.use(protectedSocket);
 
 io.on("connection", (socket) => {
-  socket.on("message", async (text) => {
+  socket.on("message", async (msg) => {
     try {
       const newMessage = new Message({
-        channelId: "6a609188cb3ec0bd13650244",
+        channelId: msg.channelId,
         username: socket.username,
-        text,
+        text: msg.text,
       });
       await newMessage.save();
       io.emit("message", newMessage);

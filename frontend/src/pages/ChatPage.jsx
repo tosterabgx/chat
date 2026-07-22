@@ -8,31 +8,44 @@ import { socket } from "../lib/socket";
 export default function ChatPage() {
   const [channels, setChannels] = useState([]);
   const [activeChannel, setActiveChannel] = useState({});
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState({});
 
   useEffect(() => {
-    fetch("/api/channel")
+    fetch("/api/channels")
       .then((res) => res.json())
       .then((data) => {
         setChannels(data.channels);
         setActiveChannel(data.channels[0]);
+        fetchMessagesInChannel(data.channels[0]._id);
       });
-
-    fetch("/api/message")
-      .then((res) => res.json())
-      .then((data) => setMessages(data.messages));
 
     socket.connect();
 
     socket.on("message", (msg) => {
-      setMessages((prev) => [...prev, msg]);
+      setMessages((prev) => ({
+        ...prev,
+        [msg.channelId]: [...(prev[msg.channelId] ?? []), msg],
+      }));
     });
 
     return () => socket.off("message");
   }, []);
 
+  async function fetchMessagesInChannel(channelId) {
+    const res = await fetch(`/api/messages/${channelId}`);
+    const data = await res.json();
+    setMessages((prev) => ({ ...prev, [channelId]: data.messages }));
+  }
+
+  function handleChannelChange(channel) {
+    setActiveChannel(channel);
+    if (!messages[channel._id]) {
+      fetchMessagesInChannel(channel._id);
+    }
+  }
+
   function send(text) {
-    socket.emit("message", text);
+    socket.emit("message", { channelId: activeChannel._id, text });
   }
 
   return (
@@ -40,7 +53,7 @@ export default function ChatPage() {
       <Sidebar
         channels={channels}
         active={activeChannel}
-        setActive={setActiveChannel}
+        setActive={handleChannelChange}
       />
 
       <main className="bg-base flex flex-1 flex-col">
@@ -49,7 +62,7 @@ export default function ChatPage() {
           channelDesc={activeChannel.description}
         />
 
-        <MessageList messages={messages} />
+        <MessageList messages={messages[activeChannel._id] ?? []} />
 
         <Sender channelName={activeChannel.name} callback={send} />
       </main>
