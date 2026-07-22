@@ -26,7 +26,7 @@ export const signup = async (req, res) => {
     await newUser.save();
 
     const data = {
-      userId: user._id,
+      userId: newUser._id,
       username: user.username,
       guest: false,
     };
@@ -94,7 +94,7 @@ export const createGuest = async (req, res) => {
 export const checkAuth = async (req, res) => {
   try {
     res.status(200).json({
-      id: req.user._id,
+      userId: req.user._id,
       username: req.user.username,
     });
   } catch (error) {
