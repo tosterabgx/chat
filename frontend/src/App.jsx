@@ -19,8 +19,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={auth ? <Chat /> : <Navigate to="/login" />} />
-      <Route path="/login" element={<AuthPage type="login" />} />
-      <Route path="/signup" element={<AuthPage type="signup" />} />
+      <Route path="/login" element={<AuthPage key="login" type="login" />} />
+      <Route path="/signup" element={<AuthPage key="signup" type="signup" />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
