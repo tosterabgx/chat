@@ -1,18 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
-import Messages from "../components/Messages";
+import MessageList from "../components/MessageList";
 import Sender from "../components/Sender";
 import Sidebar from "../components/Sidebar";
+import { socket } from "../lib/socket";
 
 export default function ChatPage() {
-  const channels = ["general", "random", "memes"];
-  const descriptions = {
-    general: "Say hi, share updates",
-  };
-  const [activeChannel, setActiveChannel] = useState("general");
+  const [channels, setChannels] = useState([]);
+  const [activeChannel, setActiveChannel] = useState({});
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/channel")
+      .then((res) => res.json())
+      .then((data) => {
+        setChannels(data.channels);
+        setActiveChannel(data.channels[0]);
+      });
+
+    fetch("/api/message")
+      .then((res) => res.json())
+      .then((data) => setMessages(data.messages));
+
+    socket.connect();
+
+    socket.on("message", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    return () => socket.off("message");
+  }, []);
 
   function send(text) {
-    console.log(text);
+    socket.emit("message", text);
   }
 
   return (
@@ -25,13 +45,13 @@ export default function ChatPage() {
 
       <main className="bg-base flex flex-1 flex-col">
         <Header
-          channelName={activeChannel}
-          channelDesc={descriptions[activeChannel]}
+          channelName={activeChannel.name}
+          channelDesc={activeChannel.description}
         />
 
-        <Messages content={["test", "test2"]} />
+        <MessageList messages={messages} />
 
-        <Sender activeChannel={activeChannel} callback={send} />
+        <Sender channelName={activeChannel.name} callback={send} />
       </main>
     </div>
   );

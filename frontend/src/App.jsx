@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router";
-import Home from "./pages/HomePage";
+import Chat from "./pages/ChatPage";
 import Login from "./pages/LoginPage";
 import NotFound from "./pages/NotFoundPage";
 import Signup from "./pages/SignupPage";
@@ -7,7 +7,7 @@ import Signup from "./pages/SignupPage";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<Chat />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
 

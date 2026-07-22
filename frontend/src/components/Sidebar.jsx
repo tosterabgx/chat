@@ -10,10 +10,10 @@ export default function Sidebar({ channels, active, setActive }) {
       <nav className="flex flex-1 flex-col gap-px overflow-y-auto p-2">
         {channels.map((c) => (
           <ChannelListItem
-            key={c}
+            key={c._id}
             onClick={() => setActive(c)}
-            name={c}
-            active={c === active}
+            name={c.name}
+            active={c._id === active._id}
           />
         ))}
       </nav>

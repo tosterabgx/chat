@@ -14,7 +14,11 @@ io.use(protectedSocket);
 io.on("connection", (socket) => {
   socket.on("message", async (text) => {
     try {
-      const newMessage = new Message({ username: socket.username, text });
+      const newMessage = new Message({
+        channelId: "6a609188cb3ec0bd13650244",
+        username: socket.username,
+        text,
+      });
       await newMessage.save();
       io.emit("message", newMessage);
     } catch (error) {
