@@ -25,12 +25,15 @@ export const signup = async (req, res) => {
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
 
-    generateToken(newUser._id, newUser.username, res);
+    const data = {
+      userId: user._id,
+      username: user.username,
+      guest: false,
+    };
 
-    res.status(201).json({
-      id: newUser._id,
-      username: newUser.username,
-    });
+    generateToken(data, res);
+
+    res.status(201).json(data);
   } catch (error) {
     console.error("Error in signup controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
@@ -54,12 +57,15 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    generateToken(user._id, user.username, res);
-
-    res.status(200).json({
-      id: user._id,
+    const data = {
+      userId: user._id,
       username: user.username,
-    });
+      guest: false,
+    };
+
+    generateToken(data, res);
+
+    res.status(200).json(data);
   } catch (error) {
     console.error("Error in login controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
@@ -74,6 +80,15 @@ export const logout = async (req, res) => {
     console.error("Error in logout controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+export const createGuest = async (req, res) => {
+  const data = {
+    username: `guest_${Math.floor(Math.random() * 10000)}`,
+    guest: true,
+  };
+  generateToken(data, res);
+  res.status(200).json(data);
 };
 
 export const checkAuth = async (req, res) => {

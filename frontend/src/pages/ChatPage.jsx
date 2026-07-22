@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
+import Loader from "../components/Loader";
 import MessageList from "../components/MessageList";
 import Sender from "../components/Sender";
 import Sidebar from "../components/Sidebar";
+import { useFetch } from "../hooks/useFetch";
 import { socket } from "../lib/socket";
 
 export default function ChatPage() {
@@ -10,37 +12,45 @@ export default function ChatPage() {
   const [activeChannel, setActiveChannel] = useState({});
   const [messages, setMessages] = useState({});
 
+  const [fetchMessages, isMessagesLoading] = useFetch(async (channelId) => {
+    const res = await fetch(`/api/messages/${channelId}`);
+    if (!res.ok) return;
+
+    const data = await res.json();
+    setMessages((prev) => ({ ...prev, [channelId]: data.messages }));
+  });
+  const [fetchChannels, isChannelsLoading] = useFetch(async () => {
+    const res = await fetch("/api/channels");
+    if (!res.ok) return;
+
+    const data = await res.json();
+    setChannels(data.channels);
+    setActiveChannel(data.channels[0]);
+    fetchMessages(data.channels[0]._id);
+  });
+
   useEffect(() => {
-    fetch("/api/channels")
-      .then((res) => res.json())
-      .then((data) => {
-        setChannels(data.channels);
-        setActiveChannel(data.channels[0]);
-        fetchMessagesInChannel(data.channels[0]._id);
-      });
+    fetchChannels();
 
     socket.connect();
 
     socket.on("message", (msg) => {
-      setMessages((prev) => ({
-        ...prev,
-        [msg.channelId]: [...(prev[msg.channelId] ?? []), msg],
-      }));
+      setMessages((prev) => {
+        if (!prev[msg.channelId]) return prev;
+        return {
+          ...prev,
+          [msg.channelId]: [...(prev[msg.channelId] ?? []), msg],
+        };
+      });
     });
 
     return () => socket.off("message");
-  }, []);
-
-  async function fetchMessagesInChannel(channelId) {
-    const res = await fetch(`/api/messages/${channelId}`);
-    const data = await res.json();
-    setMessages((prev) => ({ ...prev, [channelId]: data.messages }));
-  }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleChannelChange(channel) {
     setActiveChannel(channel);
     if (!messages[channel._id]) {
-      fetchMessagesInChannel(channel._id);
+      fetchMessages(channel._id);
     }
   }
 
@@ -62,7 +72,16 @@ export default function ChatPage() {
           channelDesc={activeChannel.description}
         />
 
-        <MessageList messages={messages[activeChannel._id] ?? []} />
+        {isMessagesLoading || isChannelsLoading ? (
+          <div className="flex flex-1 items-end justify-center pb-10">
+            <Loader />
+          </div>
+        ) : (
+          <MessageList
+            key={activeChannel._id}
+            messages={messages[activeChannel._id] ?? []}
+          />
+        )}
 
         <Sender channelName={activeChannel.name} callback={send} />
       </main>

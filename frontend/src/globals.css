@@ -8,12 +8,6 @@
     JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
 body {
   background: #171717;
   color: #ffffff;

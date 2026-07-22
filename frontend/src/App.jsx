@@ -1,15 +1,26 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
+import { useAuth } from "./hooks/useAuth";
 import Chat from "./pages/ChatPage";
-import Login from "./pages/LoginPage";
+import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFoundPage";
-import Signup from "./pages/SignupPage";
+import Loader from "./components/Loader";
 
 export default function App() {
+  const { auth, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center">
+        <Loader className="size-20" />
+      </div>
+    );
+  }
+
   return (
     <Routes>
-      <Route path="/" element={<Chat />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={auth ? <Chat /> : <Navigate to="/login" />} />
+      <Route path="/login" element={<AuthPage type="login" />} />
+      <Route path="/signup" element={<AuthPage type="signup" />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
