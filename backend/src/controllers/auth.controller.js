@@ -27,7 +27,7 @@ export const signup = async (req, res) => {
 
     const data = {
       userId: newUser._id,
-      username: user.username,
+      username: newUser.username,
       guest: false,
     };
 
