@@ -96,6 +96,7 @@ export const checkAuth = async (req, res) => {
     res.status(200).json({
       userId: req.user._id,
       username: req.user.username,
+      guest: req.user.guest,
     });
   } catch (error) {
     console.error("Error in checkAuth controller:", error.message);

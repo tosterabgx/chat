@@ -15,13 +15,13 @@ export const protectedRoute = async (req, res, next) => {
   }
 
   if (!decoded.guest) {
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId).select("-password").lean();
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    req.user = user;
+    req.user = { ...user, guest: false };
   } else {
-    req.user = { username: decoded.username };
+    req.user = { username: decoded.username, guest: true };
   }
 
   next();
