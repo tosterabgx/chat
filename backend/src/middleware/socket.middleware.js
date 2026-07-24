@@ -1,5 +1,5 @@
 import { parseCookie } from "cookie";
-import { verifyToken } from "../lib/utils.js";
+import { verifyToken } from "../lib/auth.js";
 
 export const protectedSocket = (socket, next) => {
   const cookies = parseCookie(socket.handshake.headers.cookie ?? "");

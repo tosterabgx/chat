@@ -1,4 +1,4 @@
-import { verifyToken } from "../lib/utils.js";
+import { verifyToken } from "../lib/auth.js";
 import User from "../models/user.model.js";
 
 export const protectedRoute = async (req, res, next) => {

@@ -1,5 +1,17 @@
 import jwt from "jsonwebtoken";
 
+export const sendAuthResponse = (user, res) => {
+  const payload = {
+    id: user._id,
+    username: user.username,
+    guest: user.guest ?? false,
+  };
+
+  generateToken(payload, res);
+
+  res.status(200).json({ user: payload });
+};
+
 export const generateToken = (data, res) => {
   const token = jwt.sign(data, process.env.JWT_SECRET, {
     expiresIn: "7d",

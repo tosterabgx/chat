@@ -30,7 +30,7 @@ export default function AuthPage({ type }) {
       return;
     }
 
-    setAuth(data);
+    setAuth(data.user);
     navigate("/");
   }
 
@@ -38,7 +38,7 @@ export default function AuthPage({ type }) {
     const res = await fetch("/api/auth/guest", { method: "POST" });
     const data = await res.json();
     if (!res.ok) return setError(data.message);
-    setAuth(data);
+    setAuth(data.user);
     navigate("/");
   }
 

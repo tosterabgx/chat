@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { generateToken } from "../lib/utils.js";
+import { sendAuthResponse } from "../lib/auth.js";
 import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
@@ -25,15 +25,7 @@ export const signup = async (req, res) => {
     const newUser = new User({ username, password: hashedPassword });
     await newUser.save();
 
-    const data = {
-      userId: newUser._id,
-      username: newUser.username,
-      guest: false,
-    };
-
-    generateToken(data, res);
-
-    res.status(201).json(data);
+    sendAuthResponse(newUser, res);
   } catch (error) {
     console.error("Error in signup controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
@@ -57,15 +49,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const data = {
-      userId: user._id,
-      username: user.username,
-      guest: false,
-    };
-
-    generateToken(data, res);
-
-    res.status(200).json(data);
+    sendAuthResponse(user, res);
   } catch (error) {
     console.error("Error in login controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
@@ -74,7 +58,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.clearCookie("jwt");
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Error in logout controller:", error.message);
@@ -83,21 +67,17 @@ export const logout = async (req, res) => {
 };
 
 export const createGuest = async (req, res) => {
-  const data = {
+  const user = {
     username: `guest_${Math.floor(Math.random() * 10000)}`,
     guest: true,
   };
-  generateToken(data, res);
-  res.status(200).json(data);
+
+  sendAuthResponse(user, res);
 };
 
 export const checkAuth = async (req, res) => {
   try {
-    res.status(200).json({
-      userId: req.user._id,
-      username: req.user.username,
-      guest: req.user.guest,
-    });
+    sendAuthResponse(req.user, res);
   } catch (error) {
     console.error("Error in checkAuth controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });

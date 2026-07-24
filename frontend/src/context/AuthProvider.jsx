@@ -10,7 +10,8 @@ export default function AuthProvider({ children }) {
       try {
         const res = await fetch("/api/auth/me");
         if (!res.ok) return;
-        setAuth(await res.json());
+        const data = await res.json();
+        setAuth(data.user);
       } finally {
         setIsLoading(false);
       }
