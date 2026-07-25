@@ -53,7 +53,7 @@ export const login = async (req, res) => {
     }
 
     const user = await User.findOne({ username });
-    if (!user) {
+    if (!user || user.guest || !user.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 

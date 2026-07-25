@@ -4,6 +4,7 @@ import Message from "../models/message.model.js";
 export function formatMessage(msg) {
   return {
     id: msg._id,
+    channelId: msg.channelId,
     senderId: msg.senderId,
     text: msg.text,
   };
