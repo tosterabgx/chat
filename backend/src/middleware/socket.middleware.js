@@ -1,18 +1,21 @@
 import { parseCookie } from "cookie";
 import { verifyToken } from "../lib/auth.js";
+import User from "../models/user.model.js";
 
-export const protectedSocket = (socket, next) => {
+export const protectedSocket = async (socket, next) => {
   const cookies = parseCookie(socket.handshake.headers.cookie ?? "");
-  const token = cookies.jwt;
-  if (!token) {
-    return next(new Error("Unauthorized - No Token Provided"));
+
+  const { decoded, error } = verifyToken(cookies);
+  if (error) {
+    return next(new Error(error));
   }
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return next(new Error("Unauthorized - Invalid Token"));
+  const user = await User.findById(decoded.id).select("-password").lean();
+  if (!user) {
+    return next(new Error("User not found"));
   }
 
-  socket.username = decoded.username;
+  socket.user = user;
+
   next();
 };

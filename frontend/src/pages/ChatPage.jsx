@@ -55,7 +55,7 @@ export default function ChatPage() {
   }
 
   function send(text) {
-    socket.emit("message", { channelId: activeChannel._id, text });
+    socket.emit("message", { channelId: activeChannel.id, text });
   }
 
   return (

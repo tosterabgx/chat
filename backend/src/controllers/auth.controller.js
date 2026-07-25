@@ -1,10 +1,24 @@
 import bcrypt from "bcrypt";
-import { sendAuthResponse } from "../lib/auth.js";
+import { generateToken } from "../lib/auth.js";
 import User from "../models/user.model.js";
+
+const formatUser = (user) => {
+  return {
+    id: user._id,
+    username: user.username,
+    guest: user.guest ?? false,
+  };
+};
+
+const sendAuthResponse = (user, res) => {
+  const payload = formatUser(user);
+  generateToken(payload, res);
+  res.status(200).json({ user: payload });
+};
 
 export const signup = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body ?? {};
     if (!username || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -22,19 +36,18 @@ export const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ username, password: hashedPassword });
-    await newUser.save();
+    const newUser = await User.create({ username, password: hashedPassword });
 
     sendAuthResponse(newUser, res);
   } catch (error) {
     console.error("Error in signup controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password } = req.body ?? {};
     if (!username || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -52,7 +65,7 @@ export const login = async (req, res) => {
     sendAuthResponse(user, res);
   } catch (error) {
     console.error("Error in login controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -62,17 +75,20 @@ export const logout = async (req, res) => {
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error("Error in logout controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export const createGuest = async (req, res) => {
-  const user = {
-    username: `guest_${Math.floor(Math.random() * 10000)}`,
-    guest: true,
-  };
+  try {
+    const username = `guest_${Math.random().toString(36).slice(2, 7)}`;
+    const user = await User.create({ username, guest: true });
 
-  sendAuthResponse(user, res);
+    sendAuthResponse(user, res);
+  } catch (error) {
+    console.error("Error in createGuest controller:", error.message);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 export const checkAuth = async (req, res) => {
@@ -80,6 +96,6 @@ export const checkAuth = async (req, res) => {
     sendAuthResponse(req.user, res);
   } catch (error) {
     console.error("Error in checkAuth controller:", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

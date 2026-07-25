@@ -12,15 +12,14 @@ const io = new Server(server);
 io.use(protectedSocket);
 
 io.on("connection", (socket) => {
-  socket.on("message", async (msg) => {
+  socket.on("message:new", async (msg) => {
     try {
-      const newMessage = new Message({
+      const newMessage = await Message.create({
         channelId: msg.channelId,
-        username: socket.username,
+        senderId: socket.user._id,
         text: msg.text,
       });
-      await newMessage.save();
-      io.emit("message", newMessage);
+      io.emit("message:new", newMessage);
     } catch (error) {
       console.error("Error in message socket:", error.message);
     }

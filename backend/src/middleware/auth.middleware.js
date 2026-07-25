@@ -2,27 +2,17 @@ import { verifyToken } from "../lib/auth.js";
 import User from "../models/user.model.js";
 
 export const protectedRoute = async (req, res, next) => {
-  const token = req.cookies.jwt;
-  if (!token) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized - No Token Provided" });
+  const { decoded, error } = verifyToken(req.cookies);
+  if (error) {
+    return res.status(401).json({ message: error });
   }
 
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    return res.status(401).json({ message: "Unauthorized - Invalid Token" });
+  const user = await User.findById(decoded.id).select("-password").lean();
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
   }
 
-  if (!decoded.guest) {
-    const user = await User.findById(decoded.userId).select("-password").lean();
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    req.user = { ...user, guest: false };
-  } else {
-    req.user = { username: decoded.username, guest: true };
-  }
+  req.user = user;
 
   next();
 };
