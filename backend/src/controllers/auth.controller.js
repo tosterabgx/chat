@@ -11,9 +11,8 @@ const formatUser = (user) => {
 };
 
 const sendAuthResponse = (user, res) => {
-  const payload = formatUser(user);
-  generateToken(payload, res);
-  res.status(200).json({ user: payload });
+  generateToken({ id: user._id }, res);
+  res.status(200).json({ user: formatUser(user) });
 };
 
 export const signup = async (req, res) => {

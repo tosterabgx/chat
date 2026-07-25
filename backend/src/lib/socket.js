@@ -25,7 +25,7 @@ io.on("connection", (socket) => {
         text: msg.text,
       });
 
-      io.emit("message:new", formatMessage(newMessage));
+      io.emit("message:new", formatMessage(newMessage, socket.user));
     } catch (error) {
       console.error("Error in message:new socket:", error.message);
     }
