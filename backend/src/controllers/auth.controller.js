@@ -69,6 +69,22 @@ export const login = async (req, res) => {
   }
 };
 
+export const createGuest = async (req, res) => {
+  try {
+    const username = `guest_${Math.random().toString(36).slice(2, 8)}`;
+    const user = await User.create({ username, guest: true });
+
+    sendAuthResponse(user, res);
+  } catch (error) {
+    if (error.code === 11000) {
+      return createGuest(req, res);
+    } else {
+      console.error("Error in createGuest controller:", error.message);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+};
+
 export const logout = async (req, res) => {
   try {
     res.clearCookie("jwt");
@@ -79,21 +95,9 @@ export const logout = async (req, res) => {
   }
 };
 
-export const createGuest = async (req, res) => {
-  try {
-    const username = `guest_${Math.random().toString(36).slice(2, 7)}`;
-    const user = await User.create({ username, guest: true });
-
-    sendAuthResponse(user, res);
-  } catch (error) {
-    console.error("Error in createGuest controller:", error.message);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
 export const checkAuth = async (req, res) => {
   try {
-    sendAuthResponse(req.user, res);
+    res.status(200).json({ user: formatUser(req.user) });
   } catch (error) {
     console.error("Error in checkAuth controller:", error.message);
     res.status(500).json({ message: "Internal server error" });
