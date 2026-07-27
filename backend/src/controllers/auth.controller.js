@@ -28,7 +28,7 @@ export const signup = async (req, res) => {
         .json({ message: "Password must be at least 6 characters" });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.exists({ username });
     if (user) {
       return res.status(400).json({ message: "Username already exists" });
     }
@@ -51,7 +51,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).select("+password");
     if (!user || user.guest || !user.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
